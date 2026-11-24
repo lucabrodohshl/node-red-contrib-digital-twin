@@ -8,6 +8,7 @@
         defaults: {
             name: { value: "" },
             topic: { value: "" },
+            interpretation: { value: "" },
         },
         icon: 'hash.svg',
         label: function () {
@@ -24,6 +25,10 @@
     <div class="form-row">
         <label for="node-input-topic"><i class="fa fa-tag"></i> Topic</label>
         <input type="text" id="node-input-topic" placeholder="topic">
+    </div>
+    <div class="form-row">
+        <label for="node-input-interpretation"><i class="fa fa-book"></i> Interpretation</label>
+        <input type="text" id="node-input-interpretation" placeholder="(&lt; battery soc_rtb)   — empty = internal (τ)">
     </div>
     <div class="form-tips"><b>Tip:</b> Topic used to listen to the event.</div>
 </script>

@@ -1,8 +1,8 @@
 "use strict";
-module.exports = function (RED) {
+module.exports = (RED) => {
     function DTModel(config) {
         RED.nodes.createNode(this, config);
-        this.on('input', function (msg, send, done) {
+        this.on('input', (msg, send, done) => {
             send(msg);
         });
     }

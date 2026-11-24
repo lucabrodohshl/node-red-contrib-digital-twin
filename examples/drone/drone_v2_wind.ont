@@ -1,0 +1,42 @@
+; Shared ontology K for the crop-spraying drone (QF_LRA).
+; Sources: operator RTB reserve policy, EASA open-category altitude cap,
+; mission plan (nine-cell field).
+
+; === SORTS ===
+sort Energy        ; battery state of charge, percent
+sort Length        ; metres
+sort Rate          ; litres per minute
+sort Count         ; number of field cells
+
+; === FUNCTIONS ===
+fun soc       : Energy   ; current state of charge
+fun soc_rtb   : Energy   ; return-to-base reserve
+fun alt       : Length   ; altitude above ground
+fun alt_max   : Length   ; regulatory altitude cap
+fun flow      : Rate     ; pesticide pump flow
+fun covered   : Count    ; cells sprayed so far
+fun num_cells : Count    ; cells in the mission plan
+
+; === RELATIONS ===
+rel armed :              ; motors armed by the operator
+rel rtb_active :         ; return-to-base manoeuvre engaged
+rel cell_complete :      ; current cell sprayed at the prescribed rate
+
+; === AXIOMS ===
+axiom reserve   : (= soc_rtb 25)
+axiom soc_lo    : (>= soc 0)
+axiom soc_hi    : (<= soc 100)
+axiom alt_nn    : (>= alt 0)
+axiom alt_cap   : (= alt_max 120)
+axiom alt_lim   : (<= alt alt_max)
+axiom flow_nn   : (>= flow 0)
+axiom no_ground_spray : (=> (> flow 0) (> alt 0))
+axiom cells     : (= num_cells 9)
+axiom cov_lo    : (>= covered 0)
+axiom cov_hi    : (<= covered num_cells)
+
+; --- v2 (E1): wind limits from the updated operations manual ---
+sort Speed
+fun wind : Speed
+axiom wind_nn  : (>= wind 0)
+axiom wind_max : (<= wind 12)

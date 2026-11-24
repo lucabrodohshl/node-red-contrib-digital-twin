@@ -1,0 +1,14 @@
+; DT interpretation over drone.ont, as lifted from the Node-RED flow
+; (property names already replaced by their ontology bindings)
+takeOff         : armed
+sprayStarted    : (> flow 0)
+cellCompleted   : cell_complete
+lowBattery      : (< soc 25)
+missionComplete : (not (< covered 9))
+touchdown       : (<= alt 0)
+optimizeRoute   : tau
+logTelemetry    : tau
+onGround        : (<= alt 0)
+flying          : (> alt 0)
+dispensing      : (> flow 0)
+homing          : rtb_active

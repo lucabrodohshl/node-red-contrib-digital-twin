@@ -1,0 +1,53 @@
+<script type="text/javascript">
+    RED.nodes.registerType("dt-align-gate", {
+        category: "digital twin",
+        color: "#87D3A9",
+        defaults: {
+            name: { value: "" },
+            alignment: { value: "", required: true },
+            require: { value: "strong" },
+        },
+        inputs: 1,
+        outputs: 2,
+        outputLabels: ["aligned: forward to PT", "blocked"],
+        icon: "font-awesome/fa-shield",
+        label: function () { return this.name || "dt-align-gate"; },
+        oneditprepare: function () {
+            const sel = $("#node-input-alignment");
+            const cur = this.alignment;
+            RED.nodes.eachNode(function (n) {
+                if (n.type === "dt-alignment") sel.append($("<option></option>").val(n.id).text(n.name || n.id));
+            });
+            sel.val(cur);
+        },
+    });
+</script>
+
+<script type="text/html" data-template-name="dt-align-gate">
+    <div class="form-row">
+        <label for="node-input-name"><i class="fa fa-tag"></i> Name</label>
+        <input type="text" id="node-input-name" placeholder="Name">
+    </div>
+    <div class="form-row">
+        <label for="node-input-alignment"><i class="fa fa-balance-scale"></i> Alignment</label>
+        <select id="node-input-alignment"></select>
+    </div>
+    <div class="form-row">
+        <label for="node-input-require"><i class="fa fa-shield"></i> Require</label>
+        <select id="node-input-require">
+            <option value="strong">strong (prediction, optimisation, adaptation)</option>
+            <option value="weak">weak (monitoring)</option>
+        </select>
+    </div>
+</script>
+
+<script type="text/html" data-help-name="dt-align-gate">
+    <p>Lets DT-derived decisions (e.g. an optimiser's setpoints or a self-adaptation command) reach the PT
+    only while the DT is aligned at the required level. Predictive use needs <b>strong</b> alignment:
+    only then is every trajectory the DT predicts realisable by the PT.</p>
+    <h3>Outputs</h3>
+    <ol class="node-ports">
+        <li>aligned: the message, with <code>msg.alignment</code></li>
+        <li>blocked: the message, with <code>msg.blockedBecause</code></li>
+    </ol>
+</script>

@@ -44,15 +44,21 @@ export interface DTModelNodeDef extends DTNodeDef {
 
 export interface DTPropertyNodeDef extends DTNodeDef {
   value: any;
+  /** Ontology term denoted by the property (alignment extension). */
+  binding?: string;
 }
 
 export interface DTActionNodeDef extends DTNodeDef {
   topic: string;
   payload: string;
+  /** Domain condition denoted by the action; empty = internal (alignment extension). */
+  interpretation?: string;
 }
 
 export interface DTEventNodeDef extends DTNodeDef {
   topic: string;
+  /** Domain condition denoted by the event; empty = internal (alignment extension). */
+  interpretation?: string;
 }
 
 export interface DTGraphNodeDef extends nodered.NodeDef {

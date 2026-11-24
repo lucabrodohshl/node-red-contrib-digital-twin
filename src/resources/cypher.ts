@@ -1,5 +1,10 @@
 import { DTAssetNodeDef, DTNodeDef, DTPropertyNodeDef, DTRelationNodeDef } from "./types";
 
+/** Escapes a value for a single-quoted Cypher string literal. */
+export function esc(v: any): string {
+    return v === undefined || v === null ? '' : String(v).replace(/\\/g, '\\\\').replace(/'/g, "\\'");
+}
+
 export class Cypher {
     convertAssetsRelations(assets: DTAssetNodeDef[], relations: DTRelationNodeDef[]) {
         return [
@@ -35,6 +40,7 @@ export class Cypher {
         let assetAliasCounter = 0;
         let propertyAliasCounter = 0;
         let actionAliasCounter = 0;
+        let eventAliasCounter = 0;
 
         for (let asset of assets) {
             assetAliasCounter++;
@@ -64,9 +70,24 @@ export class Cypher {
                                     ${actionAlias}.a_id = '${action.aId}',
                                     ${actionAlias}.a_type = '${action.aType}',
                                     ${actionAlias}.access_group = '${action.accessGroup}',
-                                    ${actionAlias}.nodered_type = '${action.type}'`);
+                                    ${actionAlias}.nodered_type = '${action.type}',
+                                    ${actionAlias}.interpretation = '${esc(action.interpretation)}'`);
                     cypher.push(` MERGE (${assetAlias})-[:${actionRelationName}]->(${actionAlias}) `);
                     actionAliasCounter++;
+                }
+            }
+            if (asset.events) {
+                for (let event of asset.events) {
+                    let eventAlias = `ev${eventAliasCounter}`;
+                    cypher.push(` MERGE (${eventAlias}:Event {nodered_id: '${event.id}'})
+                                SET ${eventAlias}.name = '${event.name}',
+                                    ${eventAlias}.a_type = '${event.aType}',
+                                    ${eventAlias}.nodered_type = '${event.type}',
+                                    ${eventAlias}.interpretation = '${esc(event.interpretation)}'`);
+                    cypher.push(`MATCH(${assetAlias}:Asset {nodered_id: '${asset.id}'})
+                                MATCH(${eventAlias}:Event {nodered_id: '${event.id}'})
+                                MERGE (${assetAlias})-[:${eventRelationName}]->(${eventAlias}) `);
+                    eventAliasCounter++;
                 }
             }
         }
@@ -85,7 +106,8 @@ export class Cypher {
             ${proAlias}.a_id = '${property.aId}',
             ${proAlias}.a_type = '${property.aType}',
             ${proAlias}.access_group = '${property.accessGroup}',
-            ${proAlias}.nodered_type = '${property.type}'`;
+            ${proAlias}.nodered_type = '${property.type}',
+            ${proAlias}.binding = '${esc(property.binding)}'`;
     }
 
     createRelationsCypher(relations: DTRelationNodeDef[]) {

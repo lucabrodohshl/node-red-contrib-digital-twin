@@ -1,9 +1,16 @@
-<dt-asset> ::=  <dt-model>      | 
-                <dt-event>      | 
-                <dt-action>     | 
-                <dt-property>   | 
+<dt-asset> ::=  <dt-model>      |
+                <dt-event>      |
+                <dt-action>     |
+                <dt-property>   |
+                <dt-behavior>   |
                 <dt-relation> ::=   <dt-asset>    |
                                     <dt-event>    |
                                     <dt-action>   |
                                     <dt-property> |
                                     <dt-model> ::= <dt-event>;
+
+(* alignment extension *)
+<dt-behavior>   ::= timed automaton over the asset's actions/events (labels)
+                    and state propositions over its properties;
+<dt-alignment>  ::= <dt-asset> x <dt-pt-view> x <dt-ontology>   (config refs);
+<dt-align-gate> ::= <dt-alignment>                                (config ref);

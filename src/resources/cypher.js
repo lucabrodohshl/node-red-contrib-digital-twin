@@ -1,111 +1,135 @@
 "use strict";
-var __spreadArray = (this && this.__spreadArray) || function (to, from, pack) {
-    if (pack || arguments.length === 2) for (var i = 0, l = from.length, ar; i < l; i++) {
-        if (ar || !(i in from)) {
-            if (!ar) ar = Array.prototype.slice.call(from, 0, i);
-            ar[i] = from[i];
-        }
-    }
-    return to.concat(ar || Array.prototype.slice.call(from));
-};
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.Cypher = void 0;
-var Cypher = /** @class */ (function () {
-    function Cypher() {
+exports.Cypher = exports.esc = void 0;
+/** Escapes a value for a single-quoted Cypher string literal. */
+function esc(v) {
+    return v === undefined || v === null ? '' : String(v).replace(/\\/g, '\\\\').replace(/'/g, "\\'");
+}
+exports.esc = esc;
+class Cypher {
+    convertAssetsRelations(assets, relations) {
+        return [
+            ...this.createAssetsCypher(assets),
+            ...this.createRelationsCypher(relations)
+        ];
     }
-    Cypher.prototype.convertAssetsRelations = function (assets, relations) {
-        return __spreadArray(__spreadArray([], this.createAssetsCypher(assets), true), this.createRelationsCypher(relations), true);
-    };
     // TODO: just set the node as deleted and not delete it
-    Cypher.prototype.deletedNodesCypher = function (nodes) {
-        var cypher = [];
-        for (var _i = 0, nodes_1 = nodes; _i < nodes_1.length; _i++) {
-            var node = nodes_1[_i];
+    deletedNodesCypher(nodes) {
+        let cypher = [];
+        for (let node of nodes) {
             if (node.type == 'dt-asset') {
-                cypher.push("MATCH (n:Asset {nodered_id: \"".concat(node.id, "\"}) DETACH DELETE n"));
+                cypher.push(`MATCH (n:Asset {nodered_id: "${node.id}"}) DETACH DELETE n`);
             }
             else if (node.type == 'dt-property') {
-                cypher.push("MATCH (n:Property {nodered_id: \"".concat(node.id, "\"}) DETACH DELETE n"));
+                cypher.push(`MATCH (n:Property {nodered_id: "${node.id}"}) DETACH DELETE n`);
             }
             else if (node.type == 'dt-action') {
-                cypher.push("MATCH (n:Action {nodered_id: \"".concat(node.id, "\"}) DETACH DELETE n"));
+                cypher.push(`MATCH (n:Action {nodered_id: "${node.id}"}) DETACH DELETE n`);
             }
             else if (node.type == 'dt-event') {
-                cypher.push("MATCH (n:Event {nodered_id: \"".concat(node.id, "\"}) DETACH DELETE n"));
+                cypher.push(`MATCH (n:Event {nodered_id: "${node.id}"}) DETACH DELETE n`);
             }
         }
         return cypher;
-    };
-    Cypher.prototype.createAssetsCypher = function (assets) {
-        var propertyRelationName = 'hasProperty';
-        var actionRelationName = 'hasAction';
-        var eventRelationName = 'hasEvent';
-        var cypher = [];
-        var assetAliasCounter = 0;
-        var propertyAliasCounter = 0;
-        var actionAliasCounter = 0;
-        for (var _i = 0, assets_1 = assets; _i < assets_1.length; _i++) {
-            var asset = assets_1[_i];
+    }
+    createAssetsCypher(assets) {
+        const propertyRelationName = 'hasProperty';
+        const actionRelationName = 'hasAction';
+        const eventRelationName = 'hasEvent';
+        let cypher = [];
+        let assetAliasCounter = 0;
+        let propertyAliasCounter = 0;
+        let actionAliasCounter = 0;
+        let eventAliasCounter = 0;
+        for (let asset of assets) {
             assetAliasCounter++;
-            var assetAlias = "a".concat(assetAliasCounter);
-            cypher.push("MERGE (".concat(assetAlias, ":Asset {nodered_id: '").concat(asset.id, "'}) \n                SET ").concat(assetAlias, ".name = '").concat(asset.name, "',\n                    ").concat(assetAlias, ".nodered_type = '").concat(asset.type, "'"));
+            let assetAlias = `a${assetAliasCounter}`;
+            cypher.push(`MERGE (${assetAlias}:Asset {nodered_id: '${asset.id}'}) 
+                SET ${assetAlias}.name = '${asset.name}',
+                    ${assetAlias}.nodered_type = '${asset.type}'`);
             if (asset.properties) {
-                for (var _a = 0, _b = asset.properties; _a < _b.length; _a++) {
-                    var property = _b[_a];
-                    var proAlias = "p".concat(propertyAliasCounter);
+                for (let property of asset.properties) {
+                    let proAlias = `p${propertyAliasCounter}`;
                     cypher.push(this.createPropertyCypher(property, proAlias));
-                    cypher.push("MATCH(".concat(assetAlias, ":Asset {nodered_id: '").concat(asset.id, "'})\n                                MATCH(").concat(proAlias, ":Property {nodered_id: '").concat(property.id, "'})\n                                MERGE (").concat(assetAlias, ")-[:").concat(propertyRelationName, "]->(").concat(proAlias, ") "));
+                    cypher.push(`MATCH(${assetAlias}:Asset {nodered_id: '${asset.id}'})
+                                MATCH(${proAlias}:Property {nodered_id: '${property.id}'})
+                                MERGE (${assetAlias})-[:${propertyRelationName}]->(${proAlias}) `);
                     propertyAliasCounter++;
                 }
             }
             if (asset.actions) {
-                for (var _c = 0, _d = asset.actions; _c < _d.length; _c++) {
-                    var action = _d[_c];
-                    var actionAlias = "ac".concat(actionAliasCounter);
-                    cypher.push(" MERGE (".concat(actionAlias, ":Action {nodered_id: '").concat(action.id, "'}) \n                                SET ").concat(actionAlias, ".name = '").concat(action.name, "',\n                                    ").concat(actionAlias, ".a_context = '").concat(action.aContext, "',\n                                    ").concat(actionAlias, ".a_id = '").concat(action.aId, "',\n                                    ").concat(actionAlias, ".a_type = '").concat(action.aType, "',\n                                    ").concat(actionAlias, ".access_group = '").concat(action.accessGroup, "',\n                                    ").concat(actionAlias, ".nodered_type = '").concat(action.type, "'"));
-                    cypher.push(" MERGE (".concat(assetAlias, ")-[:").concat(actionRelationName, "]->(").concat(actionAlias, ") "));
+                for (let action of asset.actions) {
+                    let actionAlias = `ac${actionAliasCounter}`;
+                    cypher.push(` MERGE (${actionAlias}:Action {nodered_id: '${action.id}'}) 
+                                SET ${actionAlias}.name = '${action.name}',
+                                    ${actionAlias}.a_context = '${action.aContext}',
+                                    ${actionAlias}.a_id = '${action.aId}',
+                                    ${actionAlias}.a_type = '${action.aType}',
+                                    ${actionAlias}.access_group = '${action.accessGroup}',
+                                    ${actionAlias}.nodered_type = '${action.type}',
+                                    ${actionAlias}.interpretation = '${esc(action.interpretation)}'`);
+                    cypher.push(` MERGE (${assetAlias})-[:${actionRelationName}]->(${actionAlias}) `);
                     actionAliasCounter++;
                 }
             }
-        }
-        return cypher;
-    };
-    Cypher.prototype.createDataPropertyCypher = function (property) {
-        return "MERGE (p:Property {nodered_id: '".concat(property.id, "'}) \n        SET p.value = '").concat(property.value, "'");
-    };
-    Cypher.prototype.createPropertyCypher = function (property, proAlias) {
-        if (proAlias === void 0) { proAlias = 'p'; }
-        return "MERGE (".concat(proAlias, ":Property {nodered_id: '").concat(property.id, "'}) \n        SET ").concat(proAlias, ".name = '").concat(property.name, "',\n            ").concat(proAlias, ".a_context = '").concat(property.aContext, "',\n            ").concat(proAlias, ".a_id = '").concat(property.aId, "',\n            ").concat(proAlias, ".a_type = '").concat(property.aType, "',\n            ").concat(proAlias, ".access_group = '").concat(property.accessGroup, "',\n            ").concat(proAlias, ".nodered_type = '").concat(property.type, "'");
-    };
-    Cypher.prototype.createRelationsCypher = function (relations) {
-        var cypher = [];
-        var originCounter = 0;
-        var targetCounter = 0;
-        var originAlias = "ao".concat(originCounter);
-        var targetAlias = "at".concat(targetCounter + 1);
-        for (var _i = 0, relations_1 = relations; _i < relations_1.length; _i++) {
-            var relation = relations_1[_i];
-            originCounter++;
-            targetCounter++;
-            var direction = this.getRelationDirectionCypher(relation.direction, relation.name);
-            for (var _a = 0, _b = relation.origins; _a < _b.length; _a++) {
-                var origin_1 = _b[_a];
-                for (var _c = 0, _d = relation.targets; _c < _d.length; _c++) {
-                    var target = _d[_c];
-                    cypher.push(" MATCH (".concat(originAlias, ":Asset {nodered_id: '").concat(origin_1.id, "'}) \n                                MATCH (").concat(targetAlias, ":Asset {nodered_id: '").concat(target.id, "'}) \n                                MERGE (").concat(originAlias, ")").concat(direction, "(").concat(targetAlias, ")"));
+            if (asset.events) {
+                for (let event of asset.events) {
+                    let eventAlias = `ev${eventAliasCounter}`;
+                    cypher.push(` MERGE (${eventAlias}:Event {nodered_id: '${event.id}'})
+                                SET ${eventAlias}.name = '${event.name}',
+                                    ${eventAlias}.a_type = '${event.aType}',
+                                    ${eventAlias}.nodered_type = '${event.type}',
+                                    ${eventAlias}.interpretation = '${esc(event.interpretation)}'`);
+                    cypher.push(`MATCH(${assetAlias}:Asset {nodered_id: '${asset.id}'})
+                                MATCH(${eventAlias}:Event {nodered_id: '${event.id}'})
+                                MERGE (${assetAlias})-[:${eventRelationName}]->(${eventAlias}) `);
+                    eventAliasCounter++;
                 }
             }
         }
         return cypher;
-    };
-    Cypher.prototype.getRelationDirectionCypher = function (direction, name) {
+    }
+    createDataPropertyCypher(property) {
+        return `MERGE (p:Property {nodered_id: '${property.id}'}) 
+        SET p.value = '${property.value}'`;
+    }
+    createPropertyCypher(property, proAlias = 'p') {
+        return `MERGE (${proAlias}:Property {nodered_id: '${property.id}'}) 
+        SET ${proAlias}.name = '${property.name}',
+            ${proAlias}.a_context = '${property.aContext}',
+            ${proAlias}.a_id = '${property.aId}',
+            ${proAlias}.a_type = '${property.aType}',
+            ${proAlias}.access_group = '${property.accessGroup}',
+            ${proAlias}.nodered_type = '${property.type}',
+            ${proAlias}.binding = '${esc(property.binding)}'`;
+    }
+    createRelationsCypher(relations) {
+        let cypher = [];
+        let originCounter = 0;
+        let targetCounter = 0;
+        let originAlias = `ao${originCounter}`;
+        let targetAlias = `at${targetCounter + 1}`;
+        for (let relation of relations) {
+            originCounter++;
+            targetCounter++;
+            let direction = this.getRelationDirectionCypher(relation.direction, relation.name);
+            for (let origin of relation.origins) {
+                for (let target of relation.targets) {
+                    cypher.push(` MATCH (${originAlias}:Asset {nodered_id: '${origin.id}'}) 
+                                MATCH (${targetAlias}:Asset {nodered_id: '${target.id}'}) 
+                                MERGE (${originAlias})${direction}(${targetAlias})`);
+                }
+            }
+        }
+        return cypher;
+    }
+    getRelationDirectionCypher(direction, name) {
         if (direction == '-->')
-            return "-[:".concat(name, "]->");
+            return `-[:${name}]->`;
         if (direction == '<--')
-            return "<-[:".concat(name, "]-");
-        return "<-[:".concat(name, "]->");
-    };
-    return Cypher;
-}());
+            return `<-[:${name}]-`;
+        return `<-[:${name}]->`;
+    }
+}
 exports.Cypher = Cypher;
 //# sourceMappingURL=cypher.js.map

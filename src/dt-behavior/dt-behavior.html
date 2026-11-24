@@ -1,0 +1,52 @@
+<script type="text/javascript">
+    RED.nodes.registerType("dt-behavior", {
+        category: "digital twin",
+        color: "#A6BBCF",
+        defaults: {
+            name: { value: "" },
+            behavior: { value: '{\n  "clocks": ["t"],\n  "initial": "Idle",\n  "locations": [{ "name": "Idle", "labels": [] }],\n  "edges": []\n}' },
+            propositions: { value: "" },
+        },
+        inputs: 1,
+        outputs: 0,
+        icon: "font-awesome/fa-clock-o",
+        label: function () { return this.name || "dt-behavior"; },
+        oneditprepare: function () {
+            this.taEditor = RED.editor.createEditor({ id: "node-input-behavior-editor", mode: "json", value: $("#node-input-behavior").val() });
+            this.propEditor = RED.editor.createEditor({ id: "node-input-propositions-editor", mode: "text", value: $("#node-input-propositions").val() });
+        },
+        oneditsave: function () {
+            $("#node-input-behavior").val(this.taEditor.getValue());
+            $("#node-input-propositions").val(this.propEditor.getValue());
+            this.taEditor.destroy(); this.propEditor.destroy();
+        },
+        oneditcancel: function () { this.taEditor.destroy(); this.propEditor.destroy(); },
+    });
+</script>
+
+<script type="text/html" data-template-name="dt-behavior">
+    <div class="form-row">
+        <label for="node-input-name"><i class="fa fa-tag"></i> Name</label>
+        <input type="text" id="node-input-name" placeholder="Name">
+    </div>
+    <div class="form-row">
+        <label><i class="fa fa-clock-o"></i> Timed automaton</label>
+        <input type="hidden" id="node-input-behavior">
+        <div style="height: 260px;" class="node-text-editor" id="node-input-behavior-editor"></div>
+    </div>
+    <div class="form-row">
+        <label><i class="fa fa-book"></i> Propositions</label>
+        <input type="hidden" id="node-input-propositions">
+        <div style="height: 120px;" class="node-text-editor" id="node-input-propositions-editor"></div>
+    </div>
+</script>
+
+<script type="text/html" data-help-name="dt-behavior">
+    <p>The <b>timed behaviour</b> of the asset it is wired to, as a timed automaton:
+    clocks, locations (with upper-bound invariants such as <code>t &lt;= 30</code> and the
+    propositions holding there) and edges (label, guard such as <code>t &gt;= 10</code>, clock resets).</p>
+    <p>Edge labels name the asset's <code>dt-action</code>/<code>dt-event</code> nodes; any other label
+    (e.g. <code>logTelemetry</code>) is a DT-internal step. Propositions are defined over the asset's
+    properties, e.g. <code>dispensing : (&gt; pumpFlow 0)</code>; property names are replaced by the
+    ontology terms they are bound to.</p>
+</script>

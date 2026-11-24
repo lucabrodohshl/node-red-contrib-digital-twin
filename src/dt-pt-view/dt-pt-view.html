@@ -1,0 +1,64 @@
+<script type="text/javascript">
+    RED.nodes.registerType("dt-pt-view", {
+        category: "config",
+        defaults: {
+            name: { value: "" },
+            format: { value: "json" },
+            template: { value: "" },
+            model: { value: "" },
+            interpretation: { value: "" },
+            critical: { value: "" },
+        },
+        label: function () { return this.name || "PT view"; },
+        oneditprepare: function () {
+            this.modelEditor = RED.editor.createEditor({ id: "node-input-model-editor", mode: "text", value: $("#node-config-input-model").val() });
+            this.interpEditor = RED.editor.createEditor({ id: "node-input-interp-editor", mode: "text", value: $("#node-config-input-interpretation").val() });
+        },
+        oneditsave: function () {
+            $("#node-config-input-model").val(this.modelEditor.getValue());
+            $("#node-config-input-interpretation").val(this.interpEditor.getValue());
+            this.modelEditor.destroy(); this.interpEditor.destroy();
+        },
+        oneditcancel: function () { this.modelEditor.destroy(); this.interpEditor.destroy(); },
+    });
+</script>
+
+<script type="text/html" data-template-name="dt-pt-view">
+    <div class="form-row">
+        <label for="node-config-input-name"><i class="fa fa-tag"></i> Name</label>
+        <input type="text" id="node-config-input-name" placeholder="Name">
+    </div>
+    <div class="form-row">
+        <label for="node-config-input-format"><i class="fa fa-file-code-o"></i> Format</label>
+        <select id="node-config-input-format">
+            <option value="json">timed automaton (JSON)</option>
+            <option value="uppaal">UPPAAL XML (clocks only)</option>
+        </select>
+    </div>
+    <div class="form-row">
+        <label for="node-config-input-template"><i class="fa fa-tag"></i> Template</label>
+        <input type="text" id="node-config-input-template" placeholder="(UPPAAL only; first template if empty)">
+    </div>
+    <div class="form-row">
+        <label><i class="fa fa-cogs"></i> PT view</label>
+        <input type="hidden" id="node-config-input-model">
+        <div style="height: 220px;" class="node-text-editor" id="node-input-model-editor"></div>
+    </div>
+    <div class="form-row">
+        <label><i class="fa fa-book"></i> Interpretation</label>
+        <input type="hidden" id="node-config-input-interpretation">
+        <div style="height: 160px;" class="node-text-editor" id="node-input-interp-editor"></div>
+    </div>
+    <div class="form-row">
+        <label for="node-config-input-critical"><i class="fa fa-exclamation-triangle"></i> Critical</label>
+        <input type="text" id="node-config-input-critical" placeholder="bat_low!, estop!">
+    </div>
+</script>
+
+<script type="text/html" data-help-name="dt-pt-view">
+    <p>An authoritative <b>Physical Twin view</b>: a timed automaton owned by the PT engineers
+    (e.g. exported from UPPAAL) together with the PT interpretation <i>I<sub>P</sub></i>,
+    mapping each proposition and event to a formula over the shared ontology
+    (<code>label : formula</code>, or <code>label : tau</code> for internal events).</p>
+    <p><b>Critical</b> events must have exactly one domain-equivalent DT counterpart (bisimulation-criticality).</p>
+</script>

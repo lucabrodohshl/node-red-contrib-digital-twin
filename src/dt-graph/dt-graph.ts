@@ -120,6 +120,10 @@ function processNode(asset: DTAssetNodeDef, node: any, nodes: any[], relationsMa
             break;
         case 'dt-model':
             break;
+        case 'dt-behavior':
+            // timed behaviour of the asset (alignment extension); stored with the model
+            (asset as any).behavior = { id: node.id, name: node.name };
+            break;
         case 'dt-relation':
             let relationNode = node;
             let outgoingNodes = nodes.filter(n => relationNode.wires[0].includes(n.id)) as DTNodeDef[];

@@ -1,0 +1,20 @@
+{
+  "name": "FlightControllerPT",
+  "clocks": ["x"],
+  "initial": "LANDED",
+  "locations": [
+    { "name": "LANDED",   "labels": ["landed"] },
+    { "name": "TAKEOFF",  "invariant": "x <= 8",  "labels": ["airborne"] },
+    { "name": "SPRAYING", "invariant": "x <= 30", "labels": ["airborne", "spraying"] },
+    { "name": "RTB",      "invariant": "x <= 20", "labels": ["airborne", "returning"] }
+  ],
+  "edges": [
+    { "from": "LANDED",   "to": "TAKEOFF",  "label": "arm?",          "reset": "x" },
+    { "from": "TAKEOFF",  "to": "SPRAYING", "label": "start_spray!",  "guard": "x >= 3",  "reset": "x" },
+    { "from": "SPRAYING", "to": "SPRAYING", "label": "cell_done!",    "guard": "x >= 10", "reset": "x" },
+    { "from": "SPRAYING", "to": "SPRAYING", "label": "nozzle_check" },
+    { "from": "SPRAYING", "to": "RTB",      "label": "bat_low!",      "reset": "x" },
+    { "from": "SPRAYING", "to": "RTB",      "label": "mission_done!", "guard": "x >= 10", "reset": "x" },
+    { "from": "RTB",      "to": "LANDED",   "label": "landed!",       "guard": "x >= 5" }
+  ]
+}

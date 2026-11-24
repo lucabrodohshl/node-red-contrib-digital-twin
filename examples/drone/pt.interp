@@ -1,0 +1,13 @@
+; PT interpretation (flight-controller vocabulary) over drone.ont
+; --- propositions ---
+landed        : (= alt 0)
+airborne      : (> alt 0)
+spraying      : (> flow 0)
+returning     : rtb_active
+; --- events (nozzle_check is internal: no entry) ---
+arm?          : armed
+start_spray!  : (and (> alt 0) (> flow 0))
+cell_done!    : cell_complete
+bat_low!      : (< soc soc_rtb)
+mission_done! : (>= covered num_cells)
+landed!       : (= alt 0)

@@ -1,0 +1,77 @@
+<script type="text/javascript">
+    RED.nodes.registerType("dt-alignment", {
+        category: "digital twin",
+        color: "#87D3A9",
+        defaults: {
+            name: { value: "" },
+            asset: { value: "", required: true },
+            ontology: { value: "", type: "dt-ontology", required: true },
+            ptView: { value: "", type: "dt-pt-view", required: true },
+            maxTau: { value: 2, validate: RED.validators.number() },
+            z3Path: { value: "" },
+        },
+        inputs: 1,
+        outputs: 1,
+        icon: "font-awesome/fa-balance-scale",
+        label: function () { return this.name || "dt-alignment"; },
+        oneditprepare: function () {
+            const sel = $("#node-input-asset");
+            const cur = this.asset;
+            RED.nodes.eachNode(function (n) {
+                if (n.type === "dt-asset") sel.append($("<option></option>").val(n.id).text(n.name || n.id));
+            });
+            sel.val(cur);
+        },
+    });
+</script>
+
+<script type="text/html" data-template-name="dt-alignment">
+    <div class="form-row">
+        <label for="node-input-name"><i class="fa fa-tag"></i> Name</label>
+        <input type="text" id="node-input-name" placeholder="Name">
+    </div>
+    <div class="form-row">
+        <label for="node-input-asset"><i class="fa fa-cube"></i> DT asset</label>
+        <select id="node-input-asset"></select>
+    </div>
+    <div class="form-row">
+        <label for="node-input-ptView"><i class="fa fa-industry"></i> PT view</label>
+        <input type="text" id="node-input-ptView">
+    </div>
+    <div class="form-row">
+        <label for="node-input-ontology"><i class="fa fa-book"></i> Ontology</label>
+        <input type="text" id="node-input-ontology">
+    </div>
+    <div class="form-row">
+        <label for="node-input-maxTau"><i class="fa fa-random"></i> Max τ-steps</label>
+        <input type="number" id="node-input-maxTau" min="0" max="5">
+    </div>
+    <div class="form-row">
+        <label for="node-input-z3Path"><i class="fa fa-terminal"></i> z3 binary</label>
+        <input type="text" id="node-input-z3Path" placeholder="z3 (or $Z3_PATH)">
+    </div>
+</script>
+
+<script type="text/html" data-help-name="dt-alignment">
+    <p>Checks that the DT model of an asset is <b>semantically aligned</b> with a PT view under the shared ontology.</p>
+    <p>On every deploy (and on any input message) the asset, its properties (with ontology bindings),
+    actions/events (with interpretations) and <code>dt-behavior</code> are lifted to a timed automaton and an
+    interpretation, and the alignment is decided with an SMT solver:</p>
+    <ul>
+        <li><b>strong</b>: weak timed bisimulation modulo domain equivalence: the DT can be used for
+            prediction and optimisation, since every DT trajectory is realisable by the PT;</li>
+        <li><b>weak</b>: the DT matches every PT behaviour, which is sufficient for monitoring;</li>
+        <li><b>none</b>: a witness is reported (trace, clock valuation and an SMT countermodel over the ontology).</li>
+    </ul>
+    <p>If only the ontology changed and the new ontology refines the old one, the verdict is reused without re-verification.</p>
+    <h3>Inputs</h3>
+    <dl class="message-properties">
+        <dt class="optional">payload.behavior <span class="property-type">object</span></dt>
+        <dd>a candidate DT behaviour to check before deploying it (what-if); the published verdict is not changed.</dd>
+    </dl>
+    <h3>Outputs</h3>
+    <dl class="message-properties">
+        <dt>payload <span class="property-type">object</span></dt><dd><code>level</code>, <code>witness</code>, label equivalences, statistics.</dd>
+        <dt>cypher <span class="property-type">string[]</span></dt><dd>statements recording <code>ALIGNED_WITH</code> and <code>DOMAIN_EQUIVALENT</code> in the knowledge graph.</dd>
+    </dl>
+</script>

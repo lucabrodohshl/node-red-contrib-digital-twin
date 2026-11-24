@@ -1,13 +1,12 @@
 "use strict";
-var dt_1 = require("../resources/dt");
-module.exports = function (RED) {
+const dt_1 = require("../resources/dt");
+module.exports = (RED) => {
     function DTAsset(config) {
-        var _this = this;
         RED.nodes.createNode(this, config);
-        this.on('input', function (msg, send, done) {
-            var data = {
+        this.on('input', (msg, send, done) => {
+            let data = {
                 property: msg.payload,
-                assetId: _this.id,
+                assetId: this.id,
             };
             dt_1.DT.events.emit(dt_1.DT.eventNames.updateAsset, data);
         });

@@ -1,9 +1,9 @@
 "use strict";
-module.exports = function (RED) {
+module.exports = (RED) => {
     function DTRelation(config) {
         this.isVirtual = false;
         RED.nodes.createNode(this, config);
-        this.on('input', function (msg, send, done) {
+        this.on('input', (msg, send, done) => {
             send(msg);
         });
     }

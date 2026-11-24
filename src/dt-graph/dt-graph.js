@@ -1,7 +1,7 @@
 "use strict";
-var dt_1 = require("../resources/dt");
-var cypher_1 = require("../resources/cypher");
-var cypherConverter = new cypher_1.Cypher();
+const dt_1 = require("../resources/dt");
+const cypher_1 = require("../resources/cypher");
+const cypherConverter = new cypher_1.Cypher();
 var graphNode;
 function processNode(asset, node, nodes, relationsMap) {
     switch (node.type) {
@@ -22,24 +22,28 @@ function processNode(asset, node, nodes, relationsMap) {
             break;
         case 'dt-model':
             break;
+        case 'dt-behavior':
+            // timed behaviour of the asset (alignment extension); stored with the model
+            asset.behavior = { id: node.id, name: node.name };
+            break;
         case 'dt-relation':
-            var relationNode_1 = node;
-            var outgoingNodes = nodes.filter(function (n) { return relationNode_1.wires[0].includes(n.id); });
-            var incomingNodes = nodes.filter(function (n) { return n.wires[0].includes(relationNode_1.id); });
-            var isAssetsRelation = !(outgoingNodes.find(function (e) { return !e.type.startsWith('dt-asset'); }) &&
-                incomingNodes.find(function (e) { return !e.type.startsWith('dt-asset'); }));
+            let relationNode = node;
+            let outgoingNodes = nodes.filter(n => relationNode.wires[0].includes(n.id));
+            let incomingNodes = nodes.filter(n => n.wires[0].includes(relationNode.id));
+            let isAssetsRelation = !(outgoingNodes.find(e => !e.type.startsWith('dt-asset')) &&
+                incomingNodes.find(e => !e.type.startsWith('dt-asset')));
             if (isAssetsRelation) {
                 relationsMap.set(node.id, {
-                    id: relationNode_1.id,
-                    name: relationNode_1.name,
-                    direction: relationNode_1.direction,
+                    id: relationNode.id,
+                    name: relationNode.name,
+                    direction: relationNode.direction,
                     origins: incomingNodes,
                     targets: outgoingNodes,
                 });
             }
             break;
         default:
-            throw new Error("Not allowed connection to ".concat(node.type));
+            throw new Error(`Not allowed connection to ${node.type}`);
     }
 }
 function modelToCypher(assets, relations) {
@@ -51,41 +55,35 @@ function deletedNodesCypher(nodes) {
 function propertyToCypher(propertyNode) {
     return [cypherConverter.createDataPropertyCypher(propertyNode)];
 }
-module.exports = function (RED) {
+module.exports = (RED) => {
     // receive updates from the Editor (model changes)
-    RED.httpNode.post('/dt-graph', function (req, res) {
+    RED.httpNode.post('/dt-graph', (req, res) => {
         if (req.body.action == 'deploy') {
-            var deletedNodes = JSON.parse(req.body.deletedNodes);
-            var assets = [];
-            var relationsMap = new Map();
-            var nodes = JSON.parse(req.body.nodes);
-            var assetsNodes = nodes.filter(function (n) { return n.type.startsWith('dt-asset'); });
+            let deletedNodes = JSON.parse(req.body.deletedNodes);
+            let assets = [];
+            let relationsMap = new Map();
+            let nodes = JSON.parse(req.body.nodes);
+            let assetsNodes = nodes.filter(n => n.type.startsWith('dt-asset'));
             if (assetsNodes.length == 0) {
                 throw new Error('No assets found');
             }
-            var _loop_1 = function (assetNode) {
-                var asset = assetNode;
-                var outGoingConnections = nodes.filter(function (n) { return assetNode.wires[0].includes(n.id); });
-                var inComingConnections = nodes.filter(function (n) { return n.wires[0].includes(assetNode.id); });
-                for (var _a = 0, outGoingConnections_1 = outGoingConnections; _a < outGoingConnections_1.length; _a++) {
-                    var node = outGoingConnections_1[_a];
+            for (let assetNode of assetsNodes) {
+                let asset = assetNode;
+                let outGoingConnections = nodes.filter(n => assetNode.wires[0].includes(n.id));
+                let inComingConnections = nodes.filter(n => n.wires[0].includes(assetNode.id));
+                for (let node of outGoingConnections) {
                     processNode(asset, node, nodes, relationsMap);
                 }
-                for (var _b = 0, inComingConnections_1 = inComingConnections; _b < inComingConnections_1.length; _b++) {
-                    var node = inComingConnections_1[_b];
+                for (let node of inComingConnections) {
                     processNode(asset, node, nodes, relationsMap);
                 }
                 assets.push(asset);
-            };
-            for (var _i = 0, assetsNodes_1 = assetsNodes; _i < assetsNodes_1.length; _i++) {
-                var assetNode = assetsNodes_1[_i];
-                _loop_1(assetNode);
             }
-            var relations = Array.from(relationsMap.values());
-            var cypher = modelToCypher(assets, relations);
-            var deletedNodesC = deletedNodesCypher(deletedNodes);
-            cypher.push.apply(cypher, deletedNodesC);
-            var payload = {
+            let relations = Array.from(relationsMap.values());
+            let cypher = modelToCypher(assets, relations);
+            let deletedNodesC = deletedNodesCypher(deletedNodes);
+            cypher.push(...deletedNodesC);
+            let payload = {
                 'model': {
                     'projectName': graphNode.projectName,
                     'projectId': graphNode.projectId,
@@ -96,7 +94,7 @@ module.exports = function (RED) {
                 },
                 'cypher': cypher
             };
-            var message = {
+            let message = {
                 payload: payload,
             };
             graphNode.send(message);
@@ -111,17 +109,17 @@ module.exports = function (RED) {
         }
         res.sendStatus(200);
     });
-    dt_1.DT.events.on(dt_1.DT.eventNames.updateAsset, function (msg) {
-        var property = msg.property;
-        var cypher = propertyToCypher(property);
-        var payload = {
+    dt_1.DT.events.on(dt_1.DT.eventNames.updateAsset, (msg) => {
+        let property = msg.property;
+        let cypher = propertyToCypher(property);
+        let payload = {
             'data': {
                 'asset_id': msg.assetId,
                 'property': property
             },
             'cypher': cypher
         };
-        var message = {
+        let message = {
             payload: payload,
         };
         graphNode.send(message);

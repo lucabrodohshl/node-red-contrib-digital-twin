@@ -8,6 +8,7 @@
             name: { value: "" },
             topic: { value: "" },
             payload: { value: "" },
+            interpretation: { value: "" },
         },
         inputs: 1,
         outputs: 1,
@@ -30,6 +31,10 @@
     <div class="form-row">
         <label for="node-input-payload"><i class="fa fa-tag"></i> Payload</label>
         <input type="text" id="node-input-payload" placeholder="{'param1': value1}">
+    </div>
+    <div class="form-row">
+        <label for="node-input-interpretation"><i class="fa fa-book"></i> Interpretation</label>
+        <input type="text" id="node-input-interpretation" placeholder="(&lt; battery soc_rtb)   — empty = internal (τ)">
     </div>
     <div class="form-tips"><b>Tip:</b> Actions can be called via MQTT topics passing params in the payload.</div>
 </script>

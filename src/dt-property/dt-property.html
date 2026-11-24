@@ -11,6 +11,7 @@
             aContext: { value: "" },
             aId: { value: "" },
             aType: { value: "" },
+            binding: { value: "" },
         },
         icon: "hash.svg",
         label: function () {
@@ -49,6 +50,11 @@
     <div class="form-row">
         <label for="node-input-aType"><i class="fa fa-tag"></i> @type</label>
         <input type="text" id="node-input-aType" placeholder="@type" />
+    </div>
+
+    <div class="form-row">
+        <label for="node-input-binding"><i class="fa fa-link"></i> Ontology term</label>
+        <input type="text" id="node-input-binding" placeholder="soc   (term of the shared ontology this property denotes)">
     </div>
 
     <br />

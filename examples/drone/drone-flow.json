@@ -1,0 +1,411 @@
+[
+  {
+    "id": "drone_tab",
+    "type": "tab",
+    "label": "Drone digital twin",
+    "disabled": false,
+    "info": ""
+  },
+  {
+    "id": "graph",
+    "type": "dt-graph",
+    "z": "drone_tab",
+    "name": "knowledge graph",
+    "projectName": "smart-farming",
+    "projectId": "sf-001",
+    "version": "1.0.0+1",
+    "x": 130,
+    "y": 40,
+    "wires": [
+      [
+        "kg_out"
+      ]
+    ]
+  },
+  {
+    "id": "kg_out",
+    "type": "debug",
+    "z": "drone_tab",
+    "name": "cypher",
+    "active": true,
+    "tosidebar": true,
+    "complete": "payload",
+    "x": 320,
+    "y": 40,
+    "wires": []
+  },
+  {
+    "id": "drone",
+    "type": "dt-asset",
+    "z": "drone_tab",
+    "name": "drone",
+    "aDTType": "Equipment",
+    "aContext": "https://saref.etsi.org/saref4agri/",
+    "aId": "urn:drone:07",
+    "aType": "saref4agri:Drone",
+    "accessGroup": "operator",
+    "x": 330,
+    "y": 170,
+    "wires": [
+      [
+        "takeOff",
+        "sprayStarted",
+        "cellCompleted",
+        "lowBattery",
+        "missionComplete",
+        "touchdown",
+        "behavior",
+        "partOf"
+      ]
+    ]
+  },
+  {
+    "id": "battery",
+    "type": "dt-property",
+    "z": "drone_tab",
+    "name": "battery",
+    "binding": "soc",
+    "aType": "saref:StateOfCharge",
+    "aContext": "https://saref.etsi.org/core/",
+    "aId": "",
+    "accessGroup": "operator",
+    "x": 130,
+    "y": 110,
+    "wires": [
+      [
+        "drone"
+      ]
+    ]
+  },
+  {
+    "id": "altitude",
+    "type": "dt-property",
+    "z": "drone_tab",
+    "name": "altitude",
+    "binding": "alt",
+    "aType": "saref:Altitude",
+    "aContext": "https://saref.etsi.org/core/",
+    "aId": "",
+    "accessGroup": "operator",
+    "x": 130,
+    "y": 150,
+    "wires": [
+      [
+        "drone"
+      ]
+    ]
+  },
+  {
+    "id": "pumpFlow",
+    "type": "dt-property",
+    "z": "drone_tab",
+    "name": "pumpFlow",
+    "binding": "flow",
+    "aType": "saref:FlowRate",
+    "aContext": "https://saref.etsi.org/core/",
+    "aId": "",
+    "accessGroup": "operator",
+    "x": 130,
+    "y": 190,
+    "wires": [
+      [
+        "drone"
+      ]
+    ]
+  },
+  {
+    "id": "cellsSprayed",
+    "type": "dt-property",
+    "z": "drone_tab",
+    "name": "cellsSprayed",
+    "binding": "covered",
+    "aType": "saref:Count",
+    "aContext": "https://saref.etsi.org/core/",
+    "aId": "",
+    "accessGroup": "operator",
+    "x": 130,
+    "y": 230,
+    "wires": [
+      [
+        "drone"
+      ]
+    ]
+  },
+  {
+    "id": "takeOff",
+    "type": "dt-action",
+    "z": "drone_tab",
+    "name": "takeOff",
+    "interpretation": "armed",
+    "aType": "saref:Command",
+    "aContext": "",
+    "aId": "",
+    "accessGroup": "operator",
+    "topic": "drone/takeOff",
+    "x": 560,
+    "y": 80,
+    "wires": [
+      []
+    ]
+  },
+  {
+    "id": "sprayStarted",
+    "type": "dt-event",
+    "z": "drone_tab",
+    "name": "sprayStarted",
+    "interpretation": "(> pumpFlow 0)",
+    "aType": "saref:Event",
+    "aContext": "",
+    "aId": "",
+    "accessGroup": "operator",
+    "topic": "drone/sprayStarted",
+    "x": 560,
+    "y": 120,
+    "wires": [
+      []
+    ]
+  },
+  {
+    "id": "cellCompleted",
+    "type": "dt-event",
+    "z": "drone_tab",
+    "name": "cellCompleted",
+    "interpretation": "cell_complete",
+    "aType": "saref:Event",
+    "aContext": "",
+    "aId": "",
+    "accessGroup": "operator",
+    "topic": "drone/cellCompleted",
+    "x": 560,
+    "y": 160,
+    "wires": [
+      []
+    ]
+  },
+  {
+    "id": "lowBattery",
+    "type": "dt-event",
+    "z": "drone_tab",
+    "name": "lowBattery",
+    "interpretation": "(< battery 25)",
+    "aType": "saref:Event",
+    "aContext": "",
+    "aId": "",
+    "accessGroup": "operator",
+    "topic": "drone/lowBattery",
+    "x": 560,
+    "y": 200,
+    "wires": [
+      []
+    ]
+  },
+  {
+    "id": "missionComplete",
+    "type": "dt-event",
+    "z": "drone_tab",
+    "name": "missionComplete",
+    "interpretation": "(not (< cellsSprayed 9))",
+    "aType": "saref:Event",
+    "aContext": "",
+    "aId": "",
+    "accessGroup": "operator",
+    "topic": "drone/missionComplete",
+    "x": 560,
+    "y": 240,
+    "wires": [
+      []
+    ]
+  },
+  {
+    "id": "touchdown",
+    "type": "dt-event",
+    "z": "drone_tab",
+    "name": "touchdown",
+    "interpretation": "(<= altitude 0)",
+    "aType": "saref:Event",
+    "aContext": "",
+    "aId": "",
+    "accessGroup": "operator",
+    "topic": "drone/touchdown",
+    "x": 560,
+    "y": 280,
+    "wires": [
+      []
+    ]
+  },
+  {
+    "id": "behavior",
+    "type": "dt-behavior",
+    "z": "drone_tab",
+    "name": "drone behaviour",
+    "behavior": "{\n  \"name\": \"DroneDT\",\n  \"clocks\": [\n    \"t\"\n  ],\n  \"initial\": \"Ready\",\n  \"locations\": [\n    {\n      \"name\": \"Ready\",\n      \"labels\": [\n        \"onGround\"\n      ]\n    },\n    {\n      \"name\": \"Ascending\",\n      \"invariant\": \"t <= 8\",\n      \"labels\": [\n        \"flying\"\n      ]\n    },\n    {\n      \"name\": \"Spraying\",\n      \"invariant\": \"t <= 30\",\n      \"labels\": [\n        \"flying\",\n        \"dispensing\"\n      ]\n    },\n    {\n      \"name\": \"Returning\",\n      \"invariant\": \"t <= 20\",\n      \"labels\": [\n        \"flying\",\n        \"homing\"\n      ]\n    }\n  ],\n  \"edges\": [\n    {\n      \"from\": \"Ready\",\n      \"to\": \"Ascending\",\n      \"label\": \"takeOff\",\n      \"reset\": \"t\"\n    },\n    {\n      \"from\": \"Ready\",\n      \"to\": \"Ready\",\n      \"label\": \"optimizeRoute\"\n    },\n    {\n      \"from\": \"Ascending\",\n      \"to\": \"Spraying\",\n      \"label\": \"sprayStarted\",\n      \"guard\": \"t >= 3\",\n      \"reset\": \"t\"\n    },\n    {\n      \"from\": \"Spraying\",\n      \"to\": \"Spraying\",\n      \"label\": \"cellCompleted\",\n      \"guard\": \"t >= 10\",\n      \"reset\": \"t\"\n    },\n    {\n      \"from\": \"Spraying\",\n      \"to\": \"Spraying\",\n      \"label\": \"logTelemetry\"\n    },\n    {\n      \"from\": \"Spraying\",\n      \"to\": \"Returning\",\n      \"label\": \"lowBattery\",\n      \"reset\": \"t\"\n    },\n    {\n      \"from\": \"Spraying\",\n      \"to\": \"Returning\",\n      \"label\": \"missionComplete\",\n      \"guard\": \"t >= 10\",\n      \"reset\": \"t\"\n    },\n    {\n      \"from\": \"Returning\",\n      \"to\": \"Ready\",\n      \"label\": \"touchdown\",\n      \"guard\": \"t >= 5\"\n    }\n  ]\n}",
+    "propositions": "onGround   : (<= altitude 0)\nflying     : (> altitude 0)\ndispensing : (> pumpFlow 0)\nhoming     : rtb_active",
+    "x": 560,
+    "y": 330,
+    "wires": [
+      []
+    ]
+  },
+  {
+    "id": "partOf",
+    "type": "dt-relation",
+    "z": "drone_tab",
+    "name": "partOf",
+    "direction": "-->",
+    "x": 560,
+    "y": 380,
+    "wires": [
+      [
+        "fleet"
+      ]
+    ]
+  },
+  {
+    "id": "fleet",
+    "type": "dt-asset",
+    "z": "drone_tab",
+    "name": "fleet",
+    "x": 740,
+    "y": 380,
+    "wires": [
+      []
+    ]
+  },
+  {
+    "id": "phi",
+    "type": "dt-ontology",
+    "name": "drone ontology",
+    "version": "1",
+    "ontology": "; Shared ontology K for the crop-spraying drone (QF_LRA).\n; Sources: operator RTB reserve policy, EASA open-category altitude cap,\n; mission plan (nine-cell field).\n\n; === SORTS ===\nsort Energy        ; battery state of charge, percent\nsort Length        ; metres\nsort Rate          ; litres per minute\nsort Count         ; number of field cells\n\n; === FUNCTIONS ===\nfun soc       : Energy   ; current state of charge\nfun soc_rtb   : Energy   ; return-to-base reserve\nfun alt       : Length   ; altitude above ground\nfun alt_max   : Length   ; regulatory altitude cap\nfun flow      : Rate     ; pesticide pump flow\nfun covered   : Count    ; cells sprayed so far\nfun num_cells : Count    ; cells in the mission plan\n\n; === RELATIONS ===\nrel armed :              ; motors armed by the operator\nrel rtb_active :         ; return-to-base manoeuvre engaged\nrel cell_complete :      ; current cell sprayed at the prescribed rate\n\n; === AXIOMS ===\naxiom reserve   : (= soc_rtb 25)\naxiom soc_lo    : (>= soc 0)\naxiom soc_hi    : (<= soc 100)\naxiom alt_nn    : (>= alt 0)\naxiom alt_cap   : (= alt_max 120)\naxiom alt_lim   : (<= alt alt_max)\naxiom flow_nn   : (>= flow 0)\naxiom no_ground_spray : (=> (> flow 0) (> alt 0))\naxiom cells     : (= num_cells 9)\naxiom cov_lo    : (>= covered 0)\naxiom cov_hi    : (<= covered num_cells)\n"
+  },
+  {
+    "id": "ptview",
+    "type": "dt-pt-view",
+    "name": "flight controller (PT)",
+    "format": "json",
+    "model": "{\n  \"name\": \"FlightControllerPT\",\n  \"clocks\": [\"x\"],\n  \"initial\": \"LANDED\",\n  \"locations\": [\n    { \"name\": \"LANDED\",   \"labels\": [\"landed\"] },\n    { \"name\": \"TAKEOFF\",  \"invariant\": \"x <= 8\",  \"labels\": [\"airborne\"] },\n    { \"name\": \"SPRAYING\", \"invariant\": \"x <= 30\", \"labels\": [\"airborne\", \"spraying\"] },\n    { \"name\": \"RTB\",      \"invariant\": \"x <= 20\", \"labels\": [\"airborne\", \"returning\"] }\n  ],\n  \"edges\": [\n    { \"from\": \"LANDED\",   \"to\": \"TAKEOFF\",  \"label\": \"arm?\",          \"reset\": \"x\" },\n    { \"from\": \"TAKEOFF\",  \"to\": \"SPRAYING\", \"label\": \"start_spray!\",  \"guard\": \"x >= 3\",  \"reset\": \"x\" },\n    { \"from\": \"SPRAYING\", \"to\": \"SPRAYING\", \"label\": \"cell_done!\",    \"guard\": \"x >= 10\", \"reset\": \"x\" },\n    { \"from\": \"SPRAYING\", \"to\": \"SPRAYING\", \"label\": \"nozzle_check\" },\n    { \"from\": \"SPRAYING\", \"to\": \"RTB\",      \"label\": \"bat_low!\",      \"reset\": \"x\" },\n    { \"from\": \"SPRAYING\", \"to\": \"RTB\",      \"label\": \"mission_done!\", \"guard\": \"x >= 10\", \"reset\": \"x\" },\n    { \"from\": \"RTB\",      \"to\": \"LANDED\",   \"label\": \"landed!\",       \"guard\": \"x >= 5\" }\n  ]\n}\n",
+    "interpretation": "; PT interpretation (flight-controller vocabulary) over drone.ont\n; --- propositions ---\nlanded        : (= alt 0)\nairborne      : (> alt 0)\nspraying      : (> flow 0)\nreturning     : rtb_active\n; --- events (nozzle_check is internal: no entry) ---\narm?          : armed\nstart_spray!  : (and (> alt 0) (> flow 0))\ncell_done!    : cell_complete\nbat_low!      : (< soc soc_rtb)\nmission_done! : (>= covered num_cells)\nlanded!       : (= alt 0)\n",
+    "critical": "bat_low!"
+  },
+  {
+    "id": "align",
+    "type": "dt-alignment",
+    "z": "drone_tab",
+    "name": "PT/DT alignment",
+    "asset": "drone",
+    "ontology": "phi",
+    "ptView": "ptview",
+    "mode": "strong",
+    "maxTau": 2,
+    "z3Path": "",
+    "x": 140,
+    "y": 450,
+    "wires": [
+      [
+        "align_out"
+      ]
+    ]
+  },
+  {
+    "id": "align_out",
+    "type": "debug",
+    "z": "drone_tab",
+    "name": "alignment verdict",
+    "active": true,
+    "tosidebar": true,
+    "console": true,
+    "complete": "payload",
+    "x": 380,
+    "y": 450,
+    "wires": []
+  },
+  {
+    "id": "whatif",
+    "type": "inject",
+    "z": "drone_tab",
+    "name": "what-if: 40 s cells",
+    "props": [
+      {
+        "p": "payload"
+      }
+    ],
+    "payload": "{\"behavior\":{\"name\":\"DroneDT\",\"clocks\":[\"t\"],\"initial\":\"Ready\",\"locations\":[{\"name\":\"Ready\",\"labels\":[\"onGround\"]},{\"name\":\"Ascending\",\"invariant\":\"t <= 8\",\"labels\":[\"flying\"]},{\"name\":\"Spraying\",\"invariant\":\"t <= 40\",\"labels\":[\"flying\",\"dispensing\"]},{\"name\":\"Returning\",\"invariant\":\"t <= 20\",\"labels\":[\"flying\",\"homing\"]}],\"edges\":[{\"from\":\"Ready\",\"to\":\"Ascending\",\"label\":\"takeOff\",\"reset\":\"t\"},{\"from\":\"Ready\",\"to\":\"Ready\",\"label\":\"optimizeRoute\"},{\"from\":\"Ascending\",\"to\":\"Spraying\",\"label\":\"sprayStarted\",\"guard\":\"t >= 3\",\"reset\":\"t\"},{\"from\":\"Spraying\",\"to\":\"Spraying\",\"label\":\"cellCompleted\",\"guard\":\"t >= 10\",\"reset\":\"t\"},{\"from\":\"Spraying\",\"to\":\"Spraying\",\"label\":\"logTelemetry\"},{\"from\":\"Spraying\",\"to\":\"Returning\",\"label\":\"lowBattery\",\"reset\":\"t\"},{\"from\":\"Spraying\",\"to\":\"Returning\",\"label\":\"missionComplete\",\"guard\":\"t >= 10\",\"reset\":\"t\"},{\"from\":\"Returning\",\"to\":\"Ready\",\"label\":\"touchdown\",\"guard\":\"t >= 5\"}]}}",
+    "payloadType": "json",
+    "repeat": "",
+    "once": false,
+    "x": 140,
+    "y": 400,
+    "wires": [
+      [
+        "align"
+      ]
+    ]
+  },
+  {
+    "id": "opt",
+    "type": "inject",
+    "z": "drone_tab",
+    "name": "optimizer: commit next cell",
+    "props": [
+      {
+        "p": "payload"
+      }
+    ],
+    "payload": "{\"action\":\"commitCell\",\"cell\":5}",
+    "payloadType": "json",
+    "repeat": "",
+    "once": true,
+    "onceDelay": "2",
+    "x": 160,
+    "y": 520,
+    "wires": [
+      [
+        "gate"
+      ]
+    ]
+  },
+  {
+    "id": "gate",
+    "type": "dt-align-gate",
+    "z": "drone_tab",
+    "name": "aligned?",
+    "alignment": "align",
+    "require": "strong",
+    "x": 400,
+    "y": 520,
+    "wires": [
+      [
+        "to_pt"
+      ],
+      [
+        "blocked"
+      ]
+    ]
+  },
+  {
+    "id": "to_pt",
+    "type": "debug",
+    "z": "drone_tab",
+    "name": "to PT (accepted)",
+    "active": true,
+    "tosidebar": true,
+    "console": true,
+    "complete": "payload",
+    "x": 600,
+    "y": 500,
+    "wires": []
+  },
+  {
+    "id": "blocked",
+    "type": "debug",
+    "z": "drone_tab",
+    "name": "blocked",
+    "active": true,
+    "tosidebar": true,
+    "console": true,
+    "complete": "true",
+    "x": 590,
+    "y": 540,
+    "wires": []
+  }
+]

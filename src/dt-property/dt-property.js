@@ -1,5 +1,5 @@
 "use strict";
-module.exports = function (RED) {
+module.exports = (RED) => {
     function DTProperty(config) {
         RED.nodes.createNode(this, config);
         this.accessGroup = config.accessGroup;
@@ -7,9 +7,9 @@ module.exports = function (RED) {
         this.aId = config.aId;
         this.aType = config.aType;
         var node = this;
-        this.on('input', function (msg, send, done) {
+        this.on('input', (msg, send, done) => {
             node.value = msg.payload;
-            var data = {
+            let data = {
                 payload: node,
             };
             send(data);

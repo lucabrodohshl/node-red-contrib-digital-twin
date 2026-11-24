@@ -1,0 +1,89 @@
+{
+  "name": "DroneDT",
+  "clocks": [
+    "t"
+  ],
+  "initial": "Ready",
+  "locations": [
+    {
+      "name": "Ready",
+      "labels": [
+        "onGround"
+      ]
+    },
+    {
+      "name": "Ascending",
+      "invariant": "t <= 8",
+      "labels": [
+        "flying"
+      ]
+    },
+    {
+      "name": "Spraying",
+      "invariant": "t <= 30",
+      "labels": [
+        "flying",
+        "dispensing"
+      ]
+    },
+    {
+      "name": "Returning",
+      "invariant": "t <= 20",
+      "labels": [
+        "flying",
+        "homing"
+      ]
+    }
+  ],
+  "edges": [
+    {
+      "from": "Ready",
+      "to": "Ascending",
+      "label": "takeOff",
+      "reset": "t"
+    },
+    {
+      "from": "Ready",
+      "to": "Ready",
+      "label": "optimizeRoute"
+    },
+    {
+      "from": "Ascending",
+      "to": "Spraying",
+      "label": "sprayStarted",
+      "guard": "t >= 3",
+      "reset": "t"
+    },
+    {
+      "from": "Spraying",
+      "to": "Spraying",
+      "label": "cellCompleted",
+      "guard": "t >= 10",
+      "reset": "t"
+    },
+    {
+      "from": "Spraying",
+      "to": "Spraying",
+      "label": "logTelemetry"
+    },
+    {
+      "from": "Spraying",
+      "to": "Returning",
+      "label": "lowBattery",
+      "reset": "t"
+    },
+    {
+      "from": "Spraying",
+      "to": "Returning",
+      "label": "missionComplete",
+      "guard": "t >= 10",
+      "reset": "t"
+    },
+    {
+      "from": "Returning",
+      "to": "Ready",
+      "label": "touchdown",
+      "guard": "t >= 5"
+    }
+  ]
+}

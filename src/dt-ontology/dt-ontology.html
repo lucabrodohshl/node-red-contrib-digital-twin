@@ -1,0 +1,46 @@
+<script type="text/javascript">
+    RED.nodes.registerType("dt-ontology", {
+        category: "config",
+        defaults: {
+            name: { value: "" },
+            version: { value: "1" },
+            ontology: { value: "sort Energy\nfun soc : Energy\nfun soc_rtb : Energy\naxiom reserve : (= soc_rtb 25)\naxiom soc_range : (and (>= soc 0) (<= soc 100))" },
+        },
+        label: function () { return (this.name || "ontology") + " v" + (this.version || "1"); },
+        oneditprepare: function () {
+            this.editor = RED.editor.createEditor({ id: "node-input-ontology-editor", mode: "text", value: $("#node-config-input-ontology").val() });
+        },
+        oneditsave: function () { $("#node-config-input-ontology").val(this.editor.getValue()); this.editor.destroy(); delete this.editor; },
+        oneditcancel: function () { this.editor.destroy(); delete this.editor; },
+    });
+</script>
+
+<script type="text/html" data-template-name="dt-ontology">
+    <div class="form-row">
+        <label for="node-config-input-name"><i class="fa fa-tag"></i> Name</label>
+        <input type="text" id="node-config-input-name" placeholder="Name">
+    </div>
+    <div class="form-row">
+        <label for="node-config-input-version"><i class="fa fa-code-fork"></i> Version</label>
+        <input type="text" id="node-config-input-version" placeholder="1">
+    </div>
+    <div class="form-row">
+        <label><i class="fa fa-book"></i> Ontology</label>
+        <input type="hidden" id="node-config-input-ontology">
+        <div style="height: 300px; min-height:150px;" class="node-text-editor" id="node-input-ontology-editor"></div>
+    </div>
+</script>
+
+<script type="text/html" data-help-name="dt-ontology">
+    <p>The <b>shared ontology</b> K = (S, F, R, &Delta;): the only artifact PT and DT have in common.</p>
+    <p>One statement per line (statements may span lines while parentheses are open); <code>;</code> starts a comment.</p>
+    <pre>sort Energy            ; user sorts range over Real
+sort Count : Int
+fun soc : Energy
+fun cons : Cell -> Energy
+rel armed :
+axiom reserve : (= soc_rtb 25)</pre>
+    <p>Axioms are SMT-LIB2 terms (e.g. quantifier-free linear arithmetic). Changing the ontology and its
+    <b>version</b> triggers a knowledge-refinement check: if the new ontology refines the old one (it keeps every
+    symbol, entails the old axioms and keeps every label's meaning), the established alignment is reused without re-verification.</p>
+</script>
